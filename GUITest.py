@@ -11,7 +11,7 @@ class App(customtkinter.CTk):
         self.password = customtkinter.StringVar()
         self.password.trace_add('write', self.updateScore)
 
-        #setting up gui stuff
+        #Setting up GUI stuff
         self.Title = customtkinter.CTkLabel(self, width=40, height=30, text="Password Checker")
         self.Title.grid(row=0, column=0, padx=20, pady=20)
         self.entry = customtkinter.CTkEntry(self, width=60, height=30, placeholder_text="Enter password", textvariable=self.password, show='*', text_color="black")
@@ -19,13 +19,13 @@ class App(customtkinter.CTk):
         vcmd = (self.register(self.noWhitespace), "%P")
         self.entry.configure(validate="key", validatecommand=vcmd)
         self.entry.grid(row=1, column=0, padx=20, pady=20, sticky="ew")
-        #Show Password to user
-        self.entrycopy = customtkinter.CTkTextbox(self, width=60, height=30)
+        #Shows password to user in a read-only textbox
+        self.passwordDisplay = customtkinter.StringVar()
+        self.entrycopy = customtkinter.CTkEntry(self, width=60, height=30, textvariable=self.passwordDisplay, state="readonly")
         self.entrycopy.grid(row=3, column=0, padx=20, pady=20, sticky="ew")
-        #Makes it read-only + skip tab focus
-        self.entrycopy.configure(state="disabled", takefocus=0)
+        self.entrycopy.configure(takefocus=0)
 
-        #opening files to compare password to later
+        #Opening files to compare password to later
         #Files needed to be opened as a set not as a list
         with open('./lists/100k-most-used-passwords-NCSC.txt', encoding="utf-8") as f:
             self.commonPasswords = set(line.strip().lower() for line in f if line.strip())
@@ -38,12 +38,15 @@ class App(customtkinter.CTk):
         self.scoreLabel.grid(row=4, column=0, padx=20, pady=20, sticky='ew')
         
     def updateScore(self, *args):
+        #Displays the password in the read-only textbox
+        pw = self.password.get()
+        self.passwordDisplay.set(pw)
+
         self.score = 0
-        self.entrycopy.delete("0.0", "end")
-        self.entrycopy.insert("0.0", self.password.get())
         self.score += self.passwordLengthCheck()
         self.score += self.isEnglish()
         self.score += self.isCommonPW()
+        self.score += self.checkCapitalization()
         if self.score < 40:
             self.entry.configure(fg_color="red3")
         elif self.score < 60:
@@ -54,8 +57,11 @@ class App(customtkinter.CTk):
             self.entry.configure(fg_color="chartreuse2")
         self.scoreLabel.configure(text=str(self.score))
 
-
+    #Checks the length of the password
     def passwordLengthCheck(self):
+        if self.password.get() == "":
+            return 0
+
         if len(self.password.get()) < 8:
             return -50
         elif len(self.password.get()) < 12:
@@ -65,8 +71,11 @@ class App(customtkinter.CTk):
         else:
             return 20
         
-    #check for english words - Working
+    #check for english words
     def isEnglish(self):
+        if self.password.get() == "":
+                    return 0
+
         #Get the password and make it lowercase
         pw = self.password.get().lower()
         # check any word length >= 4 to make sure "in" or "as" don't count
@@ -77,6 +86,9 @@ class App(customtkinter.CTk):
 
     #check for common passwords
     def isCommonPW(self):
+        if self.password.get() == "":
+            return 0
+
         #Get the password and make it lowercase and stripping whitespace
         pw = self.password.get().strip().lower()
         #Chekcs to see if the password is in the set of common passwords
@@ -90,6 +102,23 @@ class App(customtkinter.CTk):
         if any(char.isspace() for char in proposed_text):
             return False
         return True
+
+    def checkCapitalization(self):
+        pw = self.password.get()
+
+        lower = any(c.islower() for c in pw)
+        upper = any(c.isupper() for c in pw)
+
+        if not lower and not upper:
+            return 0
+        
+        if lower and upper:
+            return 20
+        
+        if lower or upper:
+            return -20
+        
+        return 0
 
 app = App()
 app.mainloop()
