@@ -57,6 +57,7 @@ class App(customtkinter.CTk):
         
     #These functions do not seem to be working... 
     #I guess there is a type mismatch or something where "password" != "password" somehow
+    #If pw = "password", then score should be -500, however checking if it is in the file always returns false
     def isEnglish(self):
         if str(self.password.get()) in self.engFile:
             return -10
