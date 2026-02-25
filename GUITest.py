@@ -20,8 +20,12 @@ class App(customtkinter.CTk):
         self.entrycopy.grid(row=3, column=0, padx=20, pady=20, sticky="ew")
 
         #opening files to compare password to later
-        self.pwFile = open('./lists/100k-most-used-passwords-NCSC.txt', encoding="utf-8")
-        self.engFile = open('./lists/words.txt')
+        #Files needed to be opened as a set not as a list
+        with open('./lists/100k-most-used-passwords-NCSC.txt', encoding="utf-8") as f:
+            self.commonPasswords = set(line.strip().lower() for line in f if line.strip())
+
+        with open('./lists/words.txt', encoding="utf-8") as f:
+            self.englishWords = set(line.strip().lower() for line in f if line.strip())
 
         #label to show realtime score
         self.scoreLabel = customtkinter.CTkLabel(self, width=20, height=20)
@@ -55,16 +59,22 @@ class App(customtkinter.CTk):
         else:
             return 20
         
-    #These functions do not seem to be working... 
-    #I guess there is a type mismatch or something where "password" != "password" somehow
-    #If pw = "password", then score should be -500, however checking if it is in the file always returns false
+    #check for english words - Working
     def isEnglish(self):
-        if str(self.password.get()) in self.engFile:
-            return -10
+        #Get the password and make it lowercase
+        pw = self.password.get().lower()
+        # check any word length >= 4 to make sure "in" or "as" don't count
+        for w in self.englishWords:
+            if len(w) >= 4 and w in pw:
+                return -500
         return 5
-    
+
+    #check for common passwords
     def isCommonPW(self):
-        if str(self.password.get()) in self.pwFile:
+        #Get the password and make it lowercase
+        pw = self.password.get().lower()
+        #Chekcs to see if the password is in the set of common passwords
+        if pw in self.commonPasswords:
             return -500
         return 5
         
