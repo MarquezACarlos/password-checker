@@ -1,4 +1,5 @@
-import customtkinter 
+import customtkinter
+import string
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
@@ -47,6 +48,8 @@ class App(customtkinter.CTk):
         self.score += self.isEnglish()
         self.score += self.isCommonPW()
         self.score += self.checkCapitalization()
+        self.score += self.checkSpecialCharacters()
+
         if self.score < 40:
             self.entry.configure(fg_color="red3")
         elif self.score < 60:
@@ -103,6 +106,7 @@ class App(customtkinter.CTk):
             return False
         return True
 
+    #Checks for capitalization and returns a score based on the presence of uppercase and lowercase letters
     def checkCapitalization(self):
         pw = self.password.get()
 
@@ -120,6 +124,32 @@ class App(customtkinter.CTk):
         
         return 0
 
+    #Checks for special characters and returns a score based on the presence of special characters
+    def checkSpecialCharacters(self):
+        pw = self.password.get()
+        specialCharacters = set(string.punctuation)
+
+        if not pw:
+            return 0
+
+        specialPositions = [i for i, c in enumerate(pw) if c in specialCharacters]
+        if not specialPositions:
+            return 0
+
+        n = len(pw)
+        inMiddle = [i for i in specialPositions if not (i < 2 or i >= n - 2)]
+
+        # Only edge specials
+        if len(inMiddle) == 0:
+            return 5
+
+        # At least one middle special
+        if len(inMiddle) == 1:
+            return 10
+
+        # Two or more middle specials
+        return 15
+    
 app = App()
 app.mainloop()
 
