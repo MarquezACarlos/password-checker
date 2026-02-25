@@ -15,9 +15,15 @@ class App(customtkinter.CTk):
         self.Title = customtkinter.CTkLabel(self, width=40, height=30, text="Password Checker")
         self.Title.grid(row=0, column=0, padx=20, pady=20)
         self.entry = customtkinter.CTkEntry(self, width=60, height=30, placeholder_text="Enter password", textvariable=self.password, show='*', text_color="black")
+        #Prevents whitespace 
+        vcmd = (self.register(self.noWhitespace), "%P")
+        self.entry.configure(validate="key", validatecommand=vcmd)
         self.entry.grid(row=1, column=0, padx=20, pady=20, sticky="ew")
+        #Show Password to user
         self.entrycopy = customtkinter.CTkTextbox(self, width=60, height=30)
         self.entrycopy.grid(row=3, column=0, padx=20, pady=20, sticky="ew")
+        #Makes it read-only + skip tab focus
+        self.entrycopy.configure(state="disabled", takefocus=0)
 
         #opening files to compare password to later
         #Files needed to be opened as a set not as a list
@@ -71,13 +77,19 @@ class App(customtkinter.CTk):
 
     #check for common passwords
     def isCommonPW(self):
-        #Get the password and make it lowercase
-        pw = self.password.get().lower()
+        #Get the password and make it lowercase and stripping whitespace
+        pw = self.password.get().strip().lower()
         #Chekcs to see if the password is in the set of common passwords
         if pw in self.commonPasswords:
             return -500
         return 5
         
+    #check for whitespace when typing password
+    def noWhitespace(self, proposed_text):
+        # Reject if any whitespace exists
+        if any(char.isspace() for char in proposed_text):
+            return False
+        return True
 
 app = App()
 app.mainloop()
