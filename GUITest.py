@@ -63,6 +63,7 @@ class App(customtkinter.CTk):
         self.score += self.isCommonPW()
         self.score += self.checkCapitalization()
         self.score += self.checkSpecialCharacters()
+        self.score += self.checkNumbers()
 
         if self.score <= 20:
             self.strength.configure(text="Very-Weak", text_color="red3")
@@ -181,6 +182,48 @@ class App(customtkinter.CTk):
         # Two or more middle specials
         return 25
     
+    #Checks for numbers and returns a score based on the presence of numbers
+    def checkNumbers(self):
+        pw = self.password.get()
+        if not pw:
+            return 0
+
+        #Find the positions of all digits in the password
+        digitPositions = [i for i, c in enumerate(pw) if c.isdigit()]
+
+        if not digitPositions:
+            self.suggestionList.append("Consider adding some numbers!\n")
+            return 0 
+        
+        n = len(pw)
+        inMiddle = [i for i in digitPositions if not (i < 2 or i >= n - 2)]
+
+        #Check for consecutive digits series > 2
+        sequence = False
+        for i in range(len(pw) - 2):
+            if pw[i].isdigit() and pw[i+1].isdigit() and pw[i+2].isdigit():
+                if ord(pw[i+1]) == ord(pw[i]) + 1 and ord(pw[i+2]) == ord(pw[i]) + 2:
+                    sequence = True
+                    break
+        
+        
+        #Scoring based on the number of digits in the middle of the password
+        if len(inMiddle) == 0:
+            score = 10
+        elif len(inMiddle) == 1:
+            score = 20
+        else:
+            score = 30
+
+        #Penalty
+        if sequence:
+            self.suggestionList.append("Avoid using sequences of numbers in your password!\n")
+            score -= 10
+        
+        return max(score, 0)
+
+
+
 app = App()
 app.mainloop()
 
