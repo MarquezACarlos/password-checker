@@ -25,6 +25,9 @@ class App(customtkinter.CTk):
         self.entrycopy = customtkinter.CTkEntry(self, width=60, height=30, textvariable=self.passwordDisplay, state="readonly")
         self.entrycopy.grid(row=3, column=0, padx=20, pady=20, sticky="ew")
         self.entrycopy.configure(takefocus=0)
+        self.suggestions = customtkinter.CTkTextbox(self, width=100, height=100, state="normal")
+        self.suggestions.grid(row=4, column=0, sticky='ew')
+        self.suggestionList = []
 
         #Opening files to compare password to later
         #Files needed to be opened as a set not as a list
@@ -36,7 +39,14 @@ class App(customtkinter.CTk):
 
         #label to show realtime score
         self.scoreLabel = customtkinter.CTkLabel(self, width=20, height=20)
-        self.scoreLabel.grid(row=4, column=0, padx=20, pady=20, sticky='ew')
+        self.scoreLabel.grid(row=5, column=0, padx=20, pady=20, sticky='ew')
+
+
+    def updateSuggestions(self, *args):
+        self.suggestions.delete("0.0", "end")
+        for i in range(len(self.suggestionList)):
+            self.suggestions.insert("0.0",self.suggestionList[i])
+        self.suggestionList.clear()
         
     def updateScore(self, *args):
         #Displays the password in the read-only textbox
@@ -59,17 +69,22 @@ class App(customtkinter.CTk):
         elif self.score >= 80:
             self.entry.configure(fg_color="chartreuse2")
         self.scoreLabel.configure(text=str(self.score))
+        self.updateSuggestions(self)
 
     #Checks the length of the password
     def passwordLengthCheck(self):
         if self.password.get() == "":
+            self.suggestionList.append("Strong password suggestions will appear here!\n")
             return 0
 
         if len(self.password.get()) < 8:
+            self.suggestionList.append("Passwords should be no shorter than 8 characters!\n")
             return -50
         elif len(self.password.get()) < 12:
+            self.suggestionList.append("Medium passwords should be at least 12 characters!\n")
             return 10
         elif len(self.password.get()) < 16:
+            self.suggestionList.append("The strongest passwords have more than 16 characters!\n")
             return 15
         else:
             return 20
@@ -84,6 +99,7 @@ class App(customtkinter.CTk):
         # check any word length >= 4 to make sure "in" or "as" don't count
         for w in self.englishWords:
             if len(w) >= 4 and w in pw:
+                self.suggestionList.append("Avoid using english words in your password!\n")
                 return -500
         return 5
 
@@ -96,6 +112,7 @@ class App(customtkinter.CTk):
         pw = self.password.get().strip().lower()
         #Chekcs to see if the password is in the set of common passwords
         if pw in self.commonPasswords:
+            self.suggestionList.append("This is a common password!!\n")
             return -500
         return 5
         
@@ -120,6 +137,7 @@ class App(customtkinter.CTk):
             return 20
         
         if lower or upper:
+            self.suggestionList.append("Passwords should contain lower and uppercase characters\n")
             return -20
         
         return 0
@@ -141,6 +159,7 @@ class App(customtkinter.CTk):
 
         # Only edge specials
         if len(inMiddle) == 0:
+            self.suggestionList.append("Special characters shouldn't only be at the beginning or end of a password!\n")
             return 5
 
         # At least one middle special
@@ -154,19 +173,6 @@ app = App()
 app.mainloop()
 
 
-#Run the PW through this dict to see if any english words can be found. Returns None if char not in dictionary.
-specialDict = {
-    '@' : 'a',
-    '$' : 's',
-    '0' : 'o',
-    '!' : 'i',
-    '4' : 'a',
-    '3' : 'e',
-    '6' : 'g',
-    "}{": 'x',
-    "13" : 'b',
-    '5' : 's'
-}
 
 
 
