@@ -22,13 +22,15 @@ class App(customtkinter.CTk):
         self.strength.grid(row=1,column=0,padx=5,pady=5, sticky="ew")
         self.entry.configure(validate="key", validatecommand=vcmd)
         self.entry.grid(row=2, column=0, padx=20, pady=20, sticky="ew")
+
         #Shows password to user in a read-only textbox
         self.passwordDisplay = customtkinter.StringVar()
         self.entrycopy = customtkinter.CTkEntry(self, width=60, height=30, textvariable=self.passwordDisplay, state="readonly")
         self.entrycopy.grid(row=3, column=0, padx=20, pady=20, sticky="ew")
         self.entrycopy.configure(takefocus=0)
-        self.suggestions = customtkinter.CTkTextbox(self, width=100, height=100, state="normal")
+        self.suggestions = customtkinter.CTkTextbox(self, width=100, height=100,takefocus=0)
         self.suggestions.grid(row=4, column=0, sticky='ew')
+
         self.suggestionList = []
 
         #Opening files to compare password to later
