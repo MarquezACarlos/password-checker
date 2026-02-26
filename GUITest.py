@@ -18,8 +18,10 @@ class App(customtkinter.CTk):
         self.entry = customtkinter.CTkEntry(self, width=60, height=30, placeholder_text="Enter password", textvariable=self.password, show='*', text_color="black")
         #Prevents whitespace 
         vcmd = (self.register(self.noWhitespace), "%P")
+        self.strength = customtkinter.CTkLabel(self, width=30, height=10, text="")
+        self.strength.grid(row=1,column=0,padx=5,pady=5, sticky="ew")
         self.entry.configure(validate="key", validatecommand=vcmd)
-        self.entry.grid(row=1, column=0, padx=20, pady=20, sticky="ew")
+        self.entry.grid(row=2, column=0, padx=20, pady=20, sticky="ew")
         #Shows password to user in a read-only textbox
         self.passwordDisplay = customtkinter.StringVar()
         self.entrycopy = customtkinter.CTkEntry(self, width=60, height=30, textvariable=self.passwordDisplay, state="readonly")
@@ -60,14 +62,21 @@ class App(customtkinter.CTk):
         self.score += self.checkCapitalization()
         self.score += self.checkSpecialCharacters()
 
-        if self.score < 40:
+        if self.score <= 20:
+            self.strength.configure(text="Very-Weak", text_color="red3")
             self.entry.configure(fg_color="red3")
-        elif self.score < 60:
+        elif self.score <= 40:
+            self.strength.configure(text="Weak", text_color="orange red")
             self.entry.configure(fg_color="orange red")
-        elif self.score < 80:
+        elif self.score <= 60:
+            self.strength.configure(text="Moderate", text_color="gold")
             self.entry.configure(fg_color="gold")
-        elif self.score >= 80:
+        elif self.score <= 80:
+            self.strength.configure(text="Strong", text_color="chartreuse2")
             self.entry.configure(fg_color="chartreuse2")
+        else:
+            self.strength.configure(text="Very-Strong", text_color="RoyalBlue2")
+            self.entry.configure(fg_color="RoyalBlue2")
         self.scoreLabel.configure(text=str(self.score))
         self.updateSuggestions(self)
 
@@ -82,12 +91,12 @@ class App(customtkinter.CTk):
             return -50
         elif len(self.password.get()) < 12:
             self.suggestionList.append("Medium passwords should be at least 12 characters!\n")
-            return 10
+            return 15
         elif len(self.password.get()) < 16:
             self.suggestionList.append("The strongest passwords have more than 16 characters!\n")
-            return 15
-        else:
             return 20
+        else:
+            return 25
         
     #check for english words
     def isEnglish(self):
@@ -100,7 +109,7 @@ class App(customtkinter.CTk):
         for w in self.englishWords:
             if len(w) >= 4 and w in pw:
                 self.suggestionList.append("Avoid using english words in your password!\n")
-                return -500
+                return -10
         return 5
 
     #check for common passwords
@@ -134,7 +143,7 @@ class App(customtkinter.CTk):
             return 0
         
         if lower and upper:
-            return 20
+            return 25
         
         if lower or upper:
             self.suggestionList.append("Passwords should contain lower and uppercase characters\n")
@@ -152,6 +161,7 @@ class App(customtkinter.CTk):
 
         specialPositions = [i for i, c in enumerate(pw) if c in specialCharacters]
         if not specialPositions:
+            self.suggestionList.append("Consider adding some special characters!\n")
             return 0
 
         n = len(pw)
@@ -164,10 +174,10 @@ class App(customtkinter.CTk):
 
         # At least one middle special
         if len(inMiddle) == 1:
-            return 10
+            return 15
 
         # Two or more middle specials
-        return 15
+        return 25
     
 app = App()
 app.mainloop()
